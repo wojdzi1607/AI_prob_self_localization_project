@@ -40,8 +40,7 @@ class LocAgent:
     def __call__(self, percept):
         # update posterior
         # TODO PUT YOUR CODE HERE
-
-
+        P = np.zeros([self.size, self.size])
         # -----------------------
 
         action = 'forward'
@@ -64,7 +63,7 @@ class LocAgent:
 
         # put probabilities in the array
         # TODO PUT YOUR CODE HERE
-
+        print('commit test')
 
         # -----------------------
 
