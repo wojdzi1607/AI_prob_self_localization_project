@@ -56,7 +56,7 @@ class LocAgent:
         orientations = ['N', 'E', 'S', 'W']
 
         percept_tmp = [list(percept), list(percept), list(percept), list(percept)]
-
+        print('before: ', percept_tmp)
         for k in range(4):
             if orientations[idx_orient[k]] == 'N':
                 for i in range(len(percept_tmp[k])):
@@ -175,12 +175,14 @@ class LocAgent:
         # if left-corner turn right
         if 'fwd' in percept and 'left' in percept and 'right' not in percept:
             action = 'turnright'
-
-        # if right-corner turn left
         elif 'fwd' in percept and 'right' in percept and 'left' not in percept:
             action = 'turnleft'
-
-        # if there is a wall ahead then lets turn
+        # elif 'left' in percept and 'fwd' not in percept and 'bckwd' not in percept:
+        #     action = 'turnright'
+        # elif 'right' in percept and 'fwd' not in percept and 'bckwd' not in percept:
+        #     action = 'turnleft'
+        elif 'right' in percept and 'left' in percept and 'fwd' not in percept:
+            action = 'forward'
         elif 'fwd' in percept:
             # higher chance of turning left to avoid getting stuck in one location
             action = np.random.choice(['turnleft', 'turnright'], 1, p=[0.8, 0.2])
@@ -195,7 +197,7 @@ class LocAgent:
         # print('Action ', action)
         return action, idx_orient
 
-    def getPosterior(self, idx_orient):
+    def getPosterior(self, idx_orient, pewnosc):
         # directions in order 'N', 'E', 'S', 'W'
         orientations = ['N', 'E', 'S', 'W']
         P_arr = np.zeros([self.size, self.size, 4], dtype=np.float)
@@ -204,10 +206,14 @@ class LocAgent:
         # TODO PUT YOUR CODE HERE
         # OSZACOWANIE
         besty = [np.max(self.P0), np.max(self.P1), np.max(self.P2), np.max(self.P3)]
+        for i in range(4):
+            pewnosc[i] = pewnosc[i] + besty[i]
+
+        print(pewnosc)
         v_best = -1
         for i in range(4):
-            if besty[i] > v_best:
-                v_best = besty[i]
+            if pewnosc[i] > v_best:
+                v_best = pewnosc[i]
                 idx_best = i
         if idx_best == 0: super_P = self.P0
         if idx_best == 1: super_P = self.P1
@@ -230,7 +236,7 @@ class LocAgent:
             for idx, loc in enumerate(self.locations):
                 P_arr[loc[0], loc[1], 3] = super_P[idx]
 
-        return P_arr
+        return P_arr, pewnosc
 
     def forward(self, cur_loc, cur_dir):
         if cur_dir == 'N':

@@ -176,6 +176,7 @@ class LocView:
 
 def main():
     idx_orient = [0, 1, 2, 3]
+    pewnosc = [0, 0, 0, 0]
 
     random.seed(13)
     # rate of executing actions
@@ -225,7 +226,7 @@ def main():
         print('Original percept: ', percept)
         action, idx_orient = agent(percept, idx_orient)
         # get what the agent thinks of the environment
-        P = agent.getPosterior(idx_orient)
+        P, pewnosc = agent.getPosterior(idx_orient, pewnosc)
 
         # print('Percept: ', percept)
         # print('Orientation: ', idx_orient)
