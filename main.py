@@ -175,6 +175,8 @@ class LocView:
 
 
 def main():
+    idx_orient = [0, 1, 2, 3]
+
     random.seed(13)
     # rate of executing actions
     rate = 1
@@ -183,7 +185,7 @@ def main():
     # chance that the agent will not move forward despite the command
     eps_move = 0.05
     # number of actions to execute
-    n_steps = 40
+    n_steps = 100
     # size of the environment
     env_size = 16
     # map of the environment: 1 - wall, 0 - free
@@ -217,15 +219,17 @@ def main():
     # create the agent
     agent = agents.prob.LocAgent(env.size, env.walls, eps_perc, eps_move)
     for t in range(n_steps):
-        print('step %d' % t)
+        # print('step %d' % t)
 
         percept = env.getPercept()
-        action = agent(percept)
+        print('Original percept: ', percept)
+        action, idx_orient = agent(percept, idx_orient)
         # get what the agent thinks of the environment
-        P = agent.getPosterior()
+        P = agent.getPosterior(idx_orient)
 
-        print('Percept: ', percept)
-        print('Action ', action)
+        # print('Percept: ', percept)
+        # print('Orientation: ', idx_orient)
+        # print('Action ', action)
 
         view.update(env, P)
         update(rate)
