@@ -36,6 +36,7 @@ class LocAgent:
         self.prev_action = None
         self.prev_xy = (15, 15)
         self.prev_orientation = None
+        self.prev_percept = None
         prob = 1.0 / len(self.locations)
         self.P0 = prob * np.ones([len(self.locations)], dtype=np.float)
         self.P1 = prob * np.ones([len(self.locations)], dtype=np.float)
@@ -46,24 +47,21 @@ class LocAgent:
         # update posterior
 
         orientations = ['N', 'E', 'S', 'W']
-        # AWARIA = False
-        # if self.prev_action == 'turnleft' and orientations[idx_orient[0]] !:
-        # print(percept)
-        # print(f'prev_action: {self.prev_action}')
-        # print(f'stare xy: {self.prev_xy}')
-        # print(f'nowe xy: {grid_x_y}')
-        # print(f'stare_orient: {self.prev_orientation}')
-        # print(f'nowe orient: {orientations[idx_orient[0]]}')
 
-        for i in range(4):
-            if self.prev_action == 'turnleft':
-                idx_orient[i] = idx_orient[i] - 1
-                if idx_orient[i] == -1:
-                    idx_orient[i] = 3
-            if self.prev_action == 'turnright':
-                idx_orient[i] = idx_orient[i] + 1
-                if idx_orient[i] == 4:
-                    idx_orient[i] = 0
+        print(f'stare percept: {self.prev_percept}')
+        print(f'nowe percept: {percept}')
+        if (self.prev_action == 'turnleft' or self.prev_action == 'turnright') and self.prev_percept == percept:
+            print('~~ chyba sie nie obrocilem? ~~')
+        else:
+            for i in range(4):
+                if self.prev_action == 'turnleft':
+                    idx_orient[i] = idx_orient[i] - 1
+                    if idx_orient[i] == -1:
+                        idx_orient[i] = 3
+                if self.prev_action == 'turnright':
+                    idx_orient[i] = idx_orient[i] + 1
+                    if idx_orient[i] == 4:
+                        idx_orient[i] = 0
 
         percept_tmp = [list(percept), list(percept), list(percept), list(percept)]
 
@@ -236,6 +234,7 @@ class LocAgent:
         grid_x_y = tuple(grid_x_y)
         self.prev_orientation = orientations[idx_orient[0]]
         self.prev_action = action
+        self.prev_percept = percept
         return action, idx_orient, grid_map, grid_x_y
 
     def getPosterior(self, idx_orient, pewnosc):
@@ -243,35 +242,68 @@ class LocAgent:
         P_arr = np.zeros([self.size, self.size, 4], dtype=np.float)
 
         besty = [np.max(self.P0), np.max(self.P1), np.max(self.P2), np.max(self.P3)]
+        if self.t > 100:
+            self.t = 0
+            pewnosc = besty
+            print('~~ resetuje pewnosc ~~')
+
         for i in range(4):
             pewnosc[i] = pewnosc[i] + besty[i]
 
-        print(pewnosc)
         v_best = -1
+        idx_best = 0
         for i in range(4):
             if pewnosc[i] > v_best:
                 v_best = pewnosc[i]
                 idx_best = i
-        if idx_best == 0: super_P = self.P0
-        if idx_best == 1: super_P = self.P1
-        if idx_best == 2: super_P = self.P2
-        if idx_best == 3: super_P = self.P3
+        if idx_best == 0:
+            super_P = self.P0
+            # super_left = self.P3
+            # super_right = self.P1
+            # super_back = self.P2
+        if idx_best == 1:
+            super_P = self.P1
+            # super_left = self.P0
+            # super_right = self.P2
+            # super_back = self.P3
+        if idx_best == 2:
+            super_P = self.P2
+            # super_left = self.P1
+            # super_right = self.P3
+            # super_back = self.P0
+        if idx_best == 3:
+            super_P = self.P3
+            # super_left = self.P2
+            # super_right = self.P0
+            # super_back = self.P1
 
         if orientations[idx_orient[idx_best]] == 'N':
             for idx, loc in enumerate(self.locations):
                 P_arr[loc[0], loc[1], 0] = super_P[idx]
+                # P_arr[loc[0], loc[1], 1] = super_right[idx]
+                # P_arr[loc[0], loc[1], 2] = super_back[idx]
+                # P_arr[loc[0], loc[1], 3] = super_left[idx]
 
         if orientations[idx_orient[idx_best]] == 'E':
             for idx, loc in enumerate(self.locations):
                 P_arr[loc[0], loc[1], 1] = super_P[idx]
+                # P_arr[loc[0], loc[1], 0] = super_left[idx]
+                # P_arr[loc[0], loc[1], 2] = super_right[idx]
+                # P_arr[loc[0], loc[1], 3] = super_back[idx]
 
         if orientations[idx_orient[idx_best]] == 'S':
             for idx, loc in enumerate(self.locations):
                 P_arr[loc[0], loc[1], 2] = super_P[idx]
+                # P_arr[loc[0], loc[1], 0] = super_back[idx]
+                # P_arr[loc[0], loc[1], 1] = super_left[idx]
+                # P_arr[loc[0], loc[1], 3] = super_right[idx]
 
         if orientations[idx_orient[idx_best]] == 'W':
             for idx, loc in enumerate(self.locations):
                 P_arr[loc[0], loc[1], 3] = super_P[idx]
+                # P_arr[loc[0], loc[1], 0] = super_right[idx]
+                # P_arr[loc[0], loc[1], 1] = super_back[idx]
+                # P_arr[loc[0], loc[1], 2] = super_left[idx]
 
         return P_arr, pewnosc
 

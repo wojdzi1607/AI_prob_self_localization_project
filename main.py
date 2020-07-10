@@ -181,13 +181,13 @@ def main():
     grid_x_y = (15, 15)
     # grid_x_y = list(grid_x_y)
 
-    random.seed(1)
+    # random.seed(1)
     # rate of executing actions
     rate = 1
     # chance that perception will be wrong
-    eps_perc = 0.01
+    eps_perc = 0.1
     # chance that the agent will not move forward despite the command
-    eps_move = 0.1
+    eps_move = 0.0
     # number of actions to execute
     n_steps = 100
     # size of the environment
@@ -238,7 +238,7 @@ def main():
         view.update(env, P)
         update(rate)
         # uncomment to pause before action
-        view.pause()
+        # view.pause()
 
         env.doAction(action)
 
