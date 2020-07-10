@@ -177,14 +177,17 @@ class LocView:
 def main():
     idx_orient = [0, 1, 2, 3]
     pewnosc = [0, 0, 0, 0]
+    grid_map = np.zeros((31, 31))
+    grid_x_y = (15, 15)
+    # grid_x_y = list(grid_x_y)
 
-    random.seed(13)
+    random.seed(1)
     # rate of executing actions
     rate = 1
     # chance that perception will be wrong
-    eps_perc = 0.1
+    eps_perc = 0.01
     # chance that the agent will not move forward despite the command
-    eps_move = 0.05
+    eps_move = 0.1
     # number of actions to execute
     n_steps = 100
     # size of the environment
@@ -223,8 +226,8 @@ def main():
         # print('step %d' % t)
 
         percept = env.getPercept()
-        print('Original percept: ', percept)
-        action, idx_orient = agent(percept, idx_orient)
+        # print('Original percept: ', percept)
+        action, idx_orient, grid_map, grid_x_y = agent(percept, idx_orient, grid_map, grid_x_y)
         # get what the agent thinks of the environment
         P, pewnosc = agent.getPosterior(idx_orient, pewnosc)
 
@@ -235,7 +238,7 @@ def main():
         view.update(env, P)
         update(rate)
         # uncomment to pause before action
-        # view.pause()
+        view.pause()
 
         env.doAction(action)
 
