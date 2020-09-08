@@ -63,9 +63,39 @@ class LocAgent:
                     T[i, idx, idx] = 1.0
 
         # -----------------------
-        O = np.zeros([len(self.locations), 4], dtype=np.float)
+        O = np.zeros([len(self.locations)], dtype=np.float)
         O = np.array([O, O, O, O])
         for i in range(4):
+            # COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY
+            # ___________________________________________________________________________________________________
+            percept_tmp = [list(percept), list(percept), list(percept), list(percept)]
+            for k in range(4):
+                if k == 0:
+                    for j in range(len(percept_tmp[k])):
+                        if percept_tmp[k][j] == 'fwd': percept_tmp[k][j] = 'N'
+                        if percept_tmp[k][j] == 'bckwd': percept_tmp[k][j] = 'S'
+                        if percept_tmp[k][j] == 'left': percept_tmp[k][j] = 'W'
+                        if percept_tmp[k][j] == 'right': percept_tmp[k][j] = 'E'
+                if k == 1:
+                    for j in range(len(percept_tmp[k])):
+                        if percept_tmp[k][j] == 'fwd': percept_tmp[k][j] = 'E'
+                        if percept_tmp[k][j] == 'bckwd': percept_tmp[k][j] = 'W'
+                        if percept_tmp[k][j] == 'left': percept_tmp[k][j] = 'N'
+                        if percept_tmp[k][j] == 'right': percept_tmp[k][j] = 'S'
+                if k == 2:
+                    for j in range(len(percept_tmp[k])):
+                        if percept_tmp[k][j] == 'fwd': percept_tmp[k][j] = 'S'
+                        if percept_tmp[k][j] == 'bckwd': percept_tmp[k][j] = 'N'
+                        if percept_tmp[k][j] == 'left': percept_tmp[k][j] = 'E'
+                        if percept_tmp[k][j] == 'right': percept_tmp[k][j] = 'W'
+                if k == 3:
+                    for j in range(len(percept_tmp[k])):
+                        if percept_tmp[k][j] == 'fwd': percept_tmp[k][j] = 'W'
+                        if percept_tmp[k][j] == 'bckwd': percept_tmp[k][j] = 'E'
+                        if percept_tmp[k][j] == 'left': percept_tmp[k][j] = 'S'
+                        if percept_tmp[k][j] == 'right': percept_tmp[k][j] = 'N'
+            # COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY
+            # ___________________________________________________________________________________________________
             for idx, loc in enumerate(self.locations):
                 prob = 1.0
                 for d in ['N', 'E', 'S', 'W']:
@@ -73,20 +103,32 @@ class LocAgent:
                     # __
                     obstacle = (not legalLoc(nh_loc, self.size)) or (nh_loc in self.walls)
                     # __
-                    if obstacle == (d in percept):
+                    if obstacle == (d in percept_tmp[i]):
                         prob *= (1 - self.eps_perc)
                     # __
                     else:
                         prob *= self.eps_perc
-                O[idx] = prob
+                O[i, idx] = prob
+
         # __
         # __
         # __
-        self.P = T.transpose() @ self.P
+        print(f'shape P1: {self.P.shape}')
+        print(f'shape T: {T.shape}')
+        self.P[0] = T[0].transpose() @ self.P[0]
+        self.P[1] = T[1].transpose() @ self.P[1]
+        self.P[2] = T[2].transpose() @ self.P[2]
+        self.P[3] = T[3].transpose() @ self.P[3]
+        # __
+        print(f'shape P2: {self.P.shape}')
+        print(f'shape O: {O.shape}')
         # __
         self.P = O * self.P
+        print(f'shape P3: {self.P.shape}')
         # __
         self.P /= np.sum(self.P)
+        print(f'shape P4: {self.P.shape}')
+
         action = 'forward'
         # TODO CHANGE THIS HEURISTICS TO SPEED UP CONVERGENCE
         # if there is a wall ahead then lets turn
@@ -106,10 +148,9 @@ class LocAgent:
         P_arr = np.zeros([self.size, self.size, 4], dtype=np.float)
         # put probabilities in the array
         # TODO PUT YOUR CODE HERE
-        for idx, loc in enumerate(self.locations):
-            # print(self.P.shape)
-            # print(P_arr.shape)
-            P_arr[loc[0], loc[1], 0] = self.P[0, idx, 0]
+        for i in range(4):
+            for idx, loc in enumerate(self.locations):
+                P_arr[loc[0], loc[1], i] = self.P[i, idx]
 
         # -----------------------
 
