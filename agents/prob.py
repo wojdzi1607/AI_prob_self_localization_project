@@ -44,9 +44,6 @@ class LocAgent:
         # TODO PUT YOUR CODE HERE
         # COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY
         # ___________________________________________________________________________________________________
-        print(self.prev_action)
-        print(self.P.shape)
-
         P_turn = self.P
         if self.prev_action == 'turnleft':
             P_turn[0] = (0.05 * self.P[0]) + (0.95 * self.P[1])
@@ -68,20 +65,16 @@ class LocAgent:
             if self.prev_action == "forward":
                 for idx, loc in enumerate(self.locations):
                     next_loc = nextLoc(loc, dirs[i])
-                    # ___
                     if legalLoc(next_loc, self.size) and (next_loc not in self.walls):
                         next_idx = self.loc_to_idx[next_loc]
                         T[i, idx, next_idx] = 1.0 - self.eps_move
                         T[i, idx, idx] = self.eps_move
-                    # __
                     else:
                         T[i, idx, idx] = 1.0
             else:
-                # __
                 for idx, loc in enumerate(self.locations):
                     T[i, idx, idx] = 1.0
-
-        # -----------------------
+        # -------------------------------------------------------------------------------------------------------
         O = np.zeros([len(self.locations)], dtype=np.float)
         O = np.array([O, O, O, O])
         for i in range(4):
@@ -119,35 +112,19 @@ class LocAgent:
                 prob = 1.0
                 for d in ['N', 'E', 'S', 'W']:
                     nh_loc = nextLoc(loc, d)
-                    # __
                     obstacle = (not legalLoc(nh_loc, self.size)) or (nh_loc in self.walls)
-                    # __
                     if obstacle == (d in percept_tmp[i]):
                         prob *= (1 - self.eps_perc)
-                    # __
                     else:
                         prob *= self.eps_perc
                 O[i, idx] = prob
 
-        # __
-        # __
-        # __
+        for i in range(4):
+            self.P[i] = T[i].transpose() @ self.P[i]
+            self.P[i] = O[i] * self.P[i]
 
-        self.P[0] = T[0].transpose() @ self.P[0]
-        self.P[1] = T[1].transpose() @ self.P[1]
-        self.P[2] = T[2].transpose() @ self.P[2]
-        self.P[3] = T[3].transpose() @ self.P[3]
-        # __
-
-        # __
-        self.P[0] = O[0] * self.P[0]
-        self.P[1] = O[1] * self.P[1]
-        self.P[2] = O[2] * self.P[2]
-        self.P[3] = O[3] * self.P[3]
-
-        # __
         self.P /= np.sum(self.P)
-
+        # _____________________________________________________________________________________________________
         action = 'forward'
         # TODO CHANGE THIS HEURISTICS TO SPEED UP CONVERGENCE
         # if there is a wall ahead then lets turn
