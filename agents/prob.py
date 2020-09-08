@@ -42,6 +42,25 @@ class LocAgent:
     def __call__(self, percept):
         # update posterior
         # TODO PUT YOUR CODE HERE
+        # COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY
+        # ___________________________________________________________________________________________________
+        print(self.prev_action)
+        print(self.P.shape)
+
+        P_turn = self.P
+        if self.prev_action == 'turnleft':
+            P_turn[0] = (0.05 * self.P[0]) + (0.95 * self.P[1])
+            P_turn[1] = (0.05 * self.P[1]) + (0.95 * self.P[2])
+            P_turn[2] = (0.05 * self.P[2]) + (0.95 * self.P[3])
+            P_turn[3] = (0.05 * self.P[3]) + (0.95 * self.P[0])
+        if self.prev_action == 'turnright':
+            P_turn[0] = (0.05 * self.P[0]) + (0.95 * self.P[3])
+            P_turn[1] = (0.05 * self.P[1]) + (0.95 * self.P[0])
+            P_turn[2] = (0.05 * self.P[2]) + (0.95 * self.P[1])
+            P_turn[3] = (0.05 * self.P[3]) + (0.95 * self.P[2])
+        self.P = P_turn
+        # COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY
+        # ___________________________________________________________________________________________________
         T = np.zeros([len(self.locations), len(self.locations)], dtype=np.float)
         T = np.array([T, T, T, T])
         dirs = ['N', 'E', 'S', 'W']
@@ -113,21 +132,21 @@ class LocAgent:
         # __
         # __
         # __
-        print(f'shape P1: {self.P.shape}')
-        print(f'shape T: {T.shape}')
+
         self.P[0] = T[0].transpose() @ self.P[0]
         self.P[1] = T[1].transpose() @ self.P[1]
         self.P[2] = T[2].transpose() @ self.P[2]
         self.P[3] = T[3].transpose() @ self.P[3]
         # __
-        print(f'shape P2: {self.P.shape}')
-        print(f'shape O: {O.shape}')
+
         # __
-        self.P = O * self.P
-        print(f'shape P3: {self.P.shape}')
+        self.P[0] = O[0] * self.P[0]
+        self.P[1] = O[1] * self.P[1]
+        self.P[2] = O[2] * self.P[2]
+        self.P[3] = O[3] * self.P[3]
+
         # __
         self.P /= np.sum(self.P)
-        print(f'shape P4: {self.P.shape}')
 
         action = 'forward'
         # TODO CHANGE THIS HEURISTICS TO SPEED UP CONVERGENCE
@@ -151,7 +170,7 @@ class LocAgent:
         for i in range(4):
             for idx, loc in enumerate(self.locations):
                 P_arr[loc[0], loc[1], i] = self.P[i, idx]
-
+        P_arr = P_arr / np.sum(P_arr)
         # -----------------------
 
         return P_arr
