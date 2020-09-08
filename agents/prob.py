@@ -31,281 +31,89 @@ class LocAgent:
         self.loc_to_idx = {loc: idx for idx, loc in enumerate(self.locations)}
         self.eps_perc = eps_perc
         self.eps_move = eps_move
-        self.t = 0
+
         # previous action
         self.prev_action = None
-        self.prev_xy = (15, 15)
-        self.prev_orientation = None
-        self.prev_percept = None
+
         prob = 1.0 / len(self.locations)
-        self.P0 = prob * np.ones([len(self.locations)], dtype=np.float)
-        self.P1 = prob * np.ones([len(self.locations)], dtype=np.float)
-        self.P2 = prob * np.ones([len(self.locations)], dtype=np.float)
-        self.P3 = prob * np.ones([len(self.locations)], dtype=np.float)
+        self.P = prob * np.ones([len(self.locations)], dtype=np.float)
+        self.P = np.array([self.P, self.P, self.P, self.P])
 
-    def __call__(self, percept, idx_orient, grid_map, grid_x_y):
+    def __call__(self, percept):
         # update posterior
-
-        orientations = ['N', 'E', 'S', 'W']
-
-        print(f'stare percept: {self.prev_percept}')
-        print(f'nowe percept: {percept}')
-        if (self.prev_action == 'turnleft' or self.prev_action == 'turnright') and self.prev_percept == percept:
-            print('~~ chyba sie nie obrocilem? ~~')
-        else:
-            for i in range(4):
-                if self.prev_action == 'turnleft':
-                    idx_orient[i] = idx_orient[i] - 1
-                    if idx_orient[i] == -1:
-                        idx_orient[i] = 3
-                if self.prev_action == 'turnright':
-                    idx_orient[i] = idx_orient[i] + 1
-                    if idx_orient[i] == 4:
-                        idx_orient[i] = 0
-
-        percept_tmp = [list(percept), list(percept), list(percept), list(percept)]
-
-        for k in range(4):
-            if orientations[idx_orient[k]] == 'N':
-                for i in range(len(percept_tmp[k])):
-                    if percept_tmp[k][i] == 'fwd': percept_tmp[k][i] = 'N'
-                    if percept_tmp[k][i] == 'bckwd': percept_tmp[k][i] = 'S'
-                    if percept_tmp[k][i] == 'left': percept_tmp[k][i] = 'W'
-                    if percept_tmp[k][i] == 'right': percept_tmp[k][i] = 'E'
-            if orientations[idx_orient[k]] == 'W':
-                for i in range(len(percept_tmp[k])):
-                    if percept_tmp[k][i] == 'fwd': percept_tmp[k][i] = 'W'
-                    if percept_tmp[k][i] == 'bckwd': percept_tmp[k][i] = 'E'
-                    if percept_tmp[k][i] == 'left': percept_tmp[k][i] = 'S'
-                    if percept_tmp[k][i] == 'right': percept_tmp[k][i] = 'N'
-            if orientations[idx_orient[k]] == 'S':
-                for i in range(len(percept_tmp[k])):
-                    if percept_tmp[k][i] == 'fwd': percept_tmp[k][i] = 'S'
-                    if percept_tmp[k][i] == 'bckwd': percept_tmp[k][i] = 'N'
-                    if percept_tmp[k][i] == 'left': percept_tmp[k][i] = 'E'
-                    if percept_tmp[k][i] == 'right': percept_tmp[k][i] = 'W'
-            if orientations[idx_orient[k]] == 'E':
-                for i in range(len(percept_tmp[k])):
-                    if percept_tmp[k][i] == 'fwd': percept_tmp[k][i] = 'E'
-                    if percept_tmp[k][i] == 'bckwd': percept_tmp[k][i] = 'W'
-                    if percept_tmp[k][i] == 'left': percept_tmp[k][i] = 'N'
-                    if percept_tmp[k][i] == 'right': percept_tmp[k][i] = 'S'
-
-        for ULTRA_ITEREATOR in range(4):
-            if ULTRA_ITEREATOR == 0: T0 = np.zeros([len(self.locations), len(self.locations)], dtype=np.float)
-            if ULTRA_ITEREATOR == 1: T1 = np.zeros([len(self.locations), len(self.locations)], dtype=np.float)
-            if ULTRA_ITEREATOR == 2: T2 = np.zeros([len(self.locations), len(self.locations)], dtype=np.float)
-            if ULTRA_ITEREATOR == 3: T3 = np.zeros([len(self.locations), len(self.locations)], dtype=np.float)
-
+        # TODO PUT YOUR CODE HERE
+        T = np.zeros([len(self.locations), len(self.locations)], dtype=np.float)
+        T = np.array([T, T, T, T])
+        dirs = ['N', 'E', 'S', 'W']
+        for i in range(4):
             if self.prev_action == "forward":
                 for idx, loc in enumerate(self.locations):
-                    if ULTRA_ITEREATOR == 0: next_loc = nextLoc(loc, orientations[idx_orient[0]])
-                    if ULTRA_ITEREATOR == 1: next_loc = nextLoc(loc, orientations[idx_orient[1]])
-                    if ULTRA_ITEREATOR == 2: next_loc = nextLoc(loc, orientations[idx_orient[2]])
-                    if ULTRA_ITEREATOR == 3: next_loc = nextLoc(loc, orientations[idx_orient[3]])
-
+                    next_loc = nextLoc(loc, dirs[i])
+                    # ___
                     if legalLoc(next_loc, self.size) and (next_loc not in self.walls):
                         next_idx = self.loc_to_idx[next_loc]
-                        if ULTRA_ITEREATOR == 0:
-                            T0[idx, next_idx] = 1.0 - self.eps_move
-                            T0[idx, idx] = self.eps_move
-                        if ULTRA_ITEREATOR == 1:
-                            T1[idx, next_idx] = 1.0 - self.eps_move
-                            T1[idx, idx] = self.eps_move
-                        if ULTRA_ITEREATOR == 2:
-                            T2[idx, next_idx] = 1.0 - self.eps_move
-                            T2[idx, idx] = self.eps_move
-                        if ULTRA_ITEREATOR == 3:
-                            T3[idx, next_idx] = 1.0 - self.eps_move
-                            T3[idx, idx] = self.eps_move
-
+                        T[i, idx, next_idx] = 1.0 - self.eps_move
+                        T[i, idx, idx] = self.eps_move
+                    # __
                     else:
-                        if ULTRA_ITEREATOR == 0: T0[idx, idx] = 1.0
-                        if ULTRA_ITEREATOR == 1: T1[idx, idx] = 1.0
-                        if ULTRA_ITEREATOR == 2: T2[idx, idx] = 1.0
-                        if ULTRA_ITEREATOR == 3: T3[idx, idx] = 1.0
-
+                        T[i, idx, idx] = 1.0
             else:
+                # __
                 for idx, loc in enumerate(self.locations):
-                    if ULTRA_ITEREATOR == 0: T0[idx, idx] = 1.0
-                    if ULTRA_ITEREATOR == 1: T1[idx, idx] = 1.0
-                    if ULTRA_ITEREATOR == 2: T2[idx, idx] = 1.0
-                    if ULTRA_ITEREATOR == 3: T3[idx, idx] = 1.0
+                    T[i, idx, idx] = 1.0
 
-            if ULTRA_ITEREATOR == 0: O0 = np.zeros([len(self.locations)], dtype=np.float)
-            if ULTRA_ITEREATOR == 0: O1 = np.zeros([len(self.locations)], dtype=np.float)
-            if ULTRA_ITEREATOR == 0: O2 = np.zeros([len(self.locations)], dtype=np.float)
-            if ULTRA_ITEREATOR == 0: O3 = np.zeros([len(self.locations)], dtype=np.float)
-
+        # -----------------------
+        O = np.zeros([len(self.locations), 4], dtype=np.float)
+        O = np.array([O, O, O, O])
+        for i in range(4):
             for idx, loc in enumerate(self.locations):
                 prob = 1.0
                 for d in ['N', 'E', 'S', 'W']:
                     nh_loc = nextLoc(loc, d)
+                    # __
                     obstacle = (not legalLoc(nh_loc, self.size)) or (nh_loc in self.walls)
-                    if obstacle == (d in percept_tmp[ULTRA_ITEREATOR]):
+                    # __
+                    if obstacle == (d in percept):
                         prob *= (1 - self.eps_perc)
-
+                    # __
                     else:
                         prob *= self.eps_perc
-
-                if ULTRA_ITEREATOR == 0: O0[idx] = prob
-                if ULTRA_ITEREATOR == 1: O1[idx] = prob
-                if ULTRA_ITEREATOR == 2: O2[idx] = prob
-                if ULTRA_ITEREATOR == 3: O3[idx] = prob
-
-            self.t += 1
-
-            if ULTRA_ITEREATOR == 0:
-                self.P0 = T0.transpose() @ self.P0
-                self.P0 = O0 * self.P0
-                self.P0 /= np.sum(self.P0)
-            if ULTRA_ITEREATOR == 1:
-                self.P1 = T1.transpose() @ self.P1
-                self.P1 = O1 * self.P1
-                self.P1 /= np.sum(self.P1)
-            if ULTRA_ITEREATOR == 2:
-                self.P2 = T2.transpose() @ self.P2
-                self.P2 = O2 * self.P2
-                self.P2 /= np.sum(self.P2)
-            if ULTRA_ITEREATOR == 3:
-                self.P3 = T3.transpose() @ self.P3
-                self.P3 = O3 * self.P3
-                self.P3 /= np.sum(self.P3)
-
+                O[idx] = prob
+        # __
+        # __
+        # __
+        self.P = T.transpose() @ self.P
+        # __
+        self.P = O * self.P
+        # __
+        self.P /= np.sum(self.P)
         action = 'forward'
-        grid_map[grid_x_y] = 1
-
-        free_ways = ['forward', 'turnleft', 'turnright']
-        if 'fwd' in percept: free_ways.remove('forward')
-        if 'left' in percept: free_ways.remove('turnleft')
-        if 'right' in percept: free_ways.remove('turnright')
-
-        if len(free_ways) == 0: action = np.random.choice(['turnleft', 'turnright'], 1, p=[0.8, 0.2])
-        elif len(free_ways) == 1: action = free_ways[0]
+        # TODO CHANGE THIS HEURISTICS TO SPEED UP CONVERGENCE
+        # if there is a wall ahead then lets turn
+        if 'fwd' in percept:
+            # higher chance of turning left to avoid getting stuck in one location
+            action = np.random.choice(['turnleft', 'turnright'], 1, p=[0.8, 0.2])
         else:
-            cost = {}
-            for way in free_ways:
-                if orientations[idx_orient[0]] == 'N':
-                    if way == 'turnleft': cost[way] = grid_map[grid_x_y] - grid_map[grid_x_y[0] - 1, grid_x_y[1]]
-                    if way == 'turnright': cost[way] = grid_map[grid_x_y] - grid_map[grid_x_y[0] + 1, grid_x_y[1]]
-                    if way == 'forward': cost[way] = grid_map[grid_x_y] - grid_map[grid_x_y[0], grid_x_y[1] + 1]
-                if orientations[idx_orient[0]] == 'E':
-                    if way == 'turnleft': cost[way] = grid_map[grid_x_y] - grid_map[grid_x_y[0], grid_x_y[1] + 1]
-                    if way == 'turnright': cost[way] = grid_map[grid_x_y] - grid_map[grid_x_y[0], grid_x_y[1] - 1]
-                    if way == 'forward': cost[way] = grid_map[grid_x_y] - grid_map[grid_x_y[0] + 1, grid_x_y[1]]
-                if orientations[idx_orient[0]] == 'S':
-                    if way == 'turnleft': cost[way] = grid_map[grid_x_y] - grid_map[grid_x_y[0] + 1, grid_x_y[1]]
-                    if way == 'turnright': cost[way] = grid_map[grid_x_y] - grid_map[grid_x_y[0] - 1, grid_x_y[1]]
-                    if way == 'forward': cost[way] = grid_map[grid_x_y] - grid_map[grid_x_y[0], grid_x_y[1] - 1]
-                if orientations[idx_orient[0]] == 'W':
-                    if way == 'turnleft': cost[way] = grid_map[grid_x_y] - grid_map[grid_x_y[0], grid_x_y[1] - 1]
-                    if way == 'turnright': cost[way] = grid_map[grid_x_y] - grid_map[grid_x_y[0], grid_x_y[1] + 1]
-                    if way == 'forward': cost[way] = grid_map[grid_x_y] - grid_map[grid_x_y[0] - 1, grid_x_y[1]]
+            # prefer moving forward to explore
+            action = np.random.choice(['forward', 'turnleft', 'turnright'], 1, p=[0.8, 0.1, 0.1])
 
-            cost_tmp = cost.copy()
-            for direct, coster in cost.items():
-                if coster == 0.0:
-                    del cost_tmp[direct]
-
-            if len(cost_tmp) == 0:
-                action = np.random.choice(['turnleft', 'forward', 'turnright'], 1, p=[0.25, 0.5, 0.25])
-            if len(cost_tmp) == 1:
-                action = list(cost_tmp.keys())[0]
-            if len(cost_tmp) == 2:
-                if 'forward' in cost_tmp.keys():
-                    action = 'forward'
-                else:
-                    action = np.random.choice(['turnleft', 'turnright'], 1, p=[0.8, 0.2])
-
-        self.prev_xy = grid_x_y
-        grid_x_y = list(grid_x_y)
-        if orientations[idx_orient[0]] == 'N':
-            if action == 'forward':
-                grid_x_y[1] = grid_x_y[1] + 1
-        if orientations[idx_orient[0]] == 'E':
-            if action == 'forward':
-                grid_x_y[0] = grid_x_y[0] + 1
-        if orientations[idx_orient[0]] == 'S':
-            if action == 'forward':
-                grid_x_y[1] = grid_x_y[1] - 1
-        if orientations[idx_orient[0]] == 'W':
-            if action == 'forward':
-                grid_x_y[0] = grid_x_y[0] - 1
-        grid_x_y = tuple(grid_x_y)
-        self.prev_orientation = orientations[idx_orient[0]]
         self.prev_action = action
-        self.prev_percept = percept
-        return action, idx_orient, grid_map, grid_x_y
 
-    def getPosterior(self, idx_orient, pewnosc):
-        orientations = ['N', 'E', 'S', 'W']
+        return action
+
+    def getPosterior(self):
+        # directions in order 'N', 'E', 'S', 'W'
         P_arr = np.zeros([self.size, self.size, 4], dtype=np.float)
+        # put probabilities in the array
+        # TODO PUT YOUR CODE HERE
+        for idx, loc in enumerate(self.locations):
+            # print(self.P.shape)
+            # print(P_arr.shape)
+            P_arr[loc[0], loc[1], 0] = self.P[0, idx, 0]
 
-        besty = [np.max(self.P0), np.max(self.P1), np.max(self.P2), np.max(self.P3)]
-        if self.t > 100:
-            self.t = 0
-            pewnosc = besty
-            print('~~ resetuje pewnosc ~~')
+        # -----------------------
 
-        for i in range(4):
-            pewnosc[i] = pewnosc[i] + besty[i]
-
-        v_best = -1
-        idx_best = 0
-        for i in range(4):
-            if pewnosc[i] > v_best:
-                v_best = pewnosc[i]
-                idx_best = i
-        if idx_best == 0:
-            super_P = self.P0
-            # super_left = self.P3
-            # super_right = self.P1
-            # super_back = self.P2
-        if idx_best == 1:
-            super_P = self.P1
-            # super_left = self.P0
-            # super_right = self.P2
-            # super_back = self.P3
-        if idx_best == 2:
-            super_P = self.P2
-            # super_left = self.P1
-            # super_right = self.P3
-            # super_back = self.P0
-        if idx_best == 3:
-            super_P = self.P3
-            # super_left = self.P2
-            # super_right = self.P0
-            # super_back = self.P1
-
-        if orientations[idx_orient[idx_best]] == 'N':
-            for idx, loc in enumerate(self.locations):
-                P_arr[loc[0], loc[1], 0] = super_P[idx]
-                # P_arr[loc[0], loc[1], 1] = super_right[idx]
-                # P_arr[loc[0], loc[1], 2] = super_back[idx]
-                # P_arr[loc[0], loc[1], 3] = super_left[idx]
-
-        if orientations[idx_orient[idx_best]] == 'E':
-            for idx, loc in enumerate(self.locations):
-                P_arr[loc[0], loc[1], 1] = super_P[idx]
-                # P_arr[loc[0], loc[1], 0] = super_left[idx]
-                # P_arr[loc[0], loc[1], 2] = super_right[idx]
-                # P_arr[loc[0], loc[1], 3] = super_back[idx]
-
-        if orientations[idx_orient[idx_best]] == 'S':
-            for idx, loc in enumerate(self.locations):
-                P_arr[loc[0], loc[1], 2] = super_P[idx]
-                # P_arr[loc[0], loc[1], 0] = super_back[idx]
-                # P_arr[loc[0], loc[1], 1] = super_left[idx]
-                # P_arr[loc[0], loc[1], 3] = super_right[idx]
-
-        if orientations[idx_orient[idx_best]] == 'W':
-            for idx, loc in enumerate(self.locations):
-                P_arr[loc[0], loc[1], 3] = super_P[idx]
-                # P_arr[loc[0], loc[1], 0] = super_right[idx]
-                # P_arr[loc[0], loc[1], 1] = super_back[idx]
-                # P_arr[loc[0], loc[1], 2] = super_left[idx]
-
-        return P_arr, pewnosc
+        return P_arr
 
     def forward(self, cur_loc, cur_dir):
         if cur_dir == 'N':
