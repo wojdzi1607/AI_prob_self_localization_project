@@ -175,7 +175,7 @@ class LocView:
 
 
 def main():
-    random.seed(10)
+    random.seed(11)
     # rate of executing actions
     rate = 1
     # chance that perception will be wrong
@@ -183,7 +183,7 @@ def main():
     # chance that the agent will not move forward despite the command
     eps_move = 0.05
     # number of actions to execute
-    n_steps = 40
+    n_steps = 1000
     # size of the environment
     env_size = 16
     # map of the environment: 1 - wall, 0 - free

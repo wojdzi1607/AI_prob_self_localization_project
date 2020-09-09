@@ -42,6 +42,15 @@ class LocAgent:
     def __call__(self, percept):
         # update posterior
         # TODO PUT YOUR CODE HERE
+        # BUMP BUMP BUMP BUMP BUMP BUMP BUMP BUMP BUMP BUMP BUMP BUMP BUMP BUMP BUMP BUMP BUMP BUMP BUMP BUMP
+        if 'bump' in percept:
+            bump = True
+            if 'fwd' not in percept:
+                percept[0] = 'fwd'
+            else:
+                percept.pop(0)
+        else:
+            bump = False
         # COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY
         # ___________________________________________________________________________________________________
         P_turn = self.P
@@ -62,7 +71,7 @@ class LocAgent:
         T = np.array([T, T, T, T])
         dirs = ['N', 'E', 'S', 'W']
         for i in range(4):
-            if self.prev_action == "forward":
+            if self.prev_action == "forward" and not bump:
                 for idx, loc in enumerate(self.locations):
                     next_loc = nextLoc(loc, dirs[i])
                     if legalLoc(next_loc, self.size) and (next_loc not in self.walls):
@@ -77,46 +86,55 @@ class LocAgent:
         # -------------------------------------------------------------------------------------------------------
         O = np.zeros([len(self.locations)], dtype=np.float)
         O = np.array([O, O, O, O])
+        # COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY
+        # ___________________________________________________________________________________________________
+        percept_tmp = [list(percept), list(percept), list(percept), list(percept)]
+        for k in range(4):
+            if k == 0:
+                for j in range(len(percept_tmp[k])):
+                    if percept_tmp[k][j] == 'fwd': percept_tmp[k][j] = 'N'
+                    if percept_tmp[k][j] == 'bckwd': percept_tmp[k][j] = 'S'
+                    if percept_tmp[k][j] == 'left': percept_tmp[k][j] = 'W'
+                    if percept_tmp[k][j] == 'right': percept_tmp[k][j] = 'E'
+            if k == 1:
+                for j in range(len(percept_tmp[k])):
+                    if percept_tmp[k][j] == 'fwd': percept_tmp[k][j] = 'E'
+                    if percept_tmp[k][j] == 'bckwd': percept_tmp[k][j] = 'W'
+                    if percept_tmp[k][j] == 'left': percept_tmp[k][j] = 'N'
+                    if percept_tmp[k][j] == 'right': percept_tmp[k][j] = 'S'
+            if k == 2:
+                for j in range(len(percept_tmp[k])):
+                    if percept_tmp[k][j] == 'fwd': percept_tmp[k][j] = 'S'
+                    if percept_tmp[k][j] == 'bckwd': percept_tmp[k][j] = 'N'
+                    if percept_tmp[k][j] == 'left': percept_tmp[k][j] = 'E'
+                    if percept_tmp[k][j] == 'right': percept_tmp[k][j] = 'W'
+            if k == 3:
+                for j in range(len(percept_tmp[k])):
+                    if percept_tmp[k][j] == 'fwd': percept_tmp[k][j] = 'W'
+                    if percept_tmp[k][j] == 'bckwd': percept_tmp[k][j] = 'E'
+                    if percept_tmp[k][j] == 'left': percept_tmp[k][j] = 'S'
+                    if percept_tmp[k][j] == 'right': percept_tmp[k][j] = 'N'
+        # COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY
+        # ___________________________________________________________________________________________________
         for i in range(4):
-            # COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY
-            # ___________________________________________________________________________________________________
-            percept_tmp = [list(percept), list(percept), list(percept), list(percept)]
-            for k in range(4):
-                if k == 0:
-                    for j in range(len(percept_tmp[k])):
-                        if percept_tmp[k][j] == 'fwd': percept_tmp[k][j] = 'N'
-                        if percept_tmp[k][j] == 'bckwd': percept_tmp[k][j] = 'S'
-                        if percept_tmp[k][j] == 'left': percept_tmp[k][j] = 'W'
-                        if percept_tmp[k][j] == 'right': percept_tmp[k][j] = 'E'
-                if k == 1:
-                    for j in range(len(percept_tmp[k])):
-                        if percept_tmp[k][j] == 'fwd': percept_tmp[k][j] = 'E'
-                        if percept_tmp[k][j] == 'bckwd': percept_tmp[k][j] = 'W'
-                        if percept_tmp[k][j] == 'left': percept_tmp[k][j] = 'N'
-                        if percept_tmp[k][j] == 'right': percept_tmp[k][j] = 'S'
-                if k == 2:
-                    for j in range(len(percept_tmp[k])):
-                        if percept_tmp[k][j] == 'fwd': percept_tmp[k][j] = 'S'
-                        if percept_tmp[k][j] == 'bckwd': percept_tmp[k][j] = 'N'
-                        if percept_tmp[k][j] == 'left': percept_tmp[k][j] = 'E'
-                        if percept_tmp[k][j] == 'right': percept_tmp[k][j] = 'W'
-                if k == 3:
-                    for j in range(len(percept_tmp[k])):
-                        if percept_tmp[k][j] == 'fwd': percept_tmp[k][j] = 'W'
-                        if percept_tmp[k][j] == 'bckwd': percept_tmp[k][j] = 'E'
-                        if percept_tmp[k][j] == 'left': percept_tmp[k][j] = 'S'
-                        if percept_tmp[k][j] == 'right': percept_tmp[k][j] = 'N'
-            # COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY
-            # ___________________________________________________________________________________________________
             for idx, loc in enumerate(self.locations):
                 prob = 1.0
                 for d in ['N', 'E', 'S', 'W']:
                     nh_loc = nextLoc(loc, d)
                     obstacle = (not legalLoc(nh_loc, self.size)) or (nh_loc in self.walls)
                     if obstacle == (d in percept_tmp[i]):
-                        prob *= (1 - self.eps_perc)
+                        # jesli jest bump to sensor jest bezbledny dla kierunku fwd
+                        if bump and d == percept_tmp[i][0]:
+                            prob = 1
+                        else:
+                            prob *= (1 - self.eps_perc)
                     else:
                         prob *= self.eps_perc
+                # jesli jest bump to ustawia prob=0 dla lokacji w ktorych fwd sasiad nie jest scianą
+                if bump:
+                    bump_wall = nextLoc(loc, percept_tmp[i][0])
+                    if bump_wall not in self.walls:
+                        prob = 0
                 O[i, idx] = prob
 
         for i in range(4):
@@ -131,6 +149,7 @@ class LocAgent:
         if 'fwd' in percept:
             # higher chance of turning left to avoid getting stuck in one location
             action = np.random.choice(['turnleft', 'turnright'], 1, p=[0.8, 0.2])
+            # action = np.random.choice(['forward', 'turnleft', 'turnright'], 1, p=[0.4, 0.3, 0.3])
         else:
             # prefer moving forward to explore
             action = np.random.choice(['forward', 'turnleft', 'turnright'], 1, p=[0.8, 0.1, 0.1])
