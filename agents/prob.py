@@ -130,7 +130,7 @@ class LocAgent:
                             prob *= (1 - self.eps_perc)
                     else:
                         prob *= self.eps_perc
-                # jesli jest bump to ustawia prob=0 dla lokacji w ktorych fwd sasiad nie jest scianą
+                # jesli jest bump to ustawia prob=0 dla lokacji z orientacją w ktorych fwd sasiad nie jest scianą
                 if bump:
                     bump_wall = nextLoc(loc, percept_tmp[i][0])
                     if bump_wall not in self.walls:

@@ -1,4 +1,4 @@
-# lokalizacja
+# Działanie sensora
 Prawdopodobieństwo lokalizacji jest obliczane dla 4 kierunków orientacji niezależnie.
 
 Macierz T zbudowana jest z 4 podmacierzy dla których obliczana jest wartość czynnika przejść.
@@ -13,10 +13,14 @@ odczyt sensora percept ['fwd', 'bckwd', 'left', 'right'] na percept_tmp [N, E, S
 Na końcu 4 podmacierze T i 4 podmacierze O są ze sobą odpowiednio mnożone. Wynik wpisywany jest
 do łącznego rozkładu prawdopodobieństwa self.P
 
+Przy rozpocząciu nowego kroku, jeżeli poprzednią akcją był obrót, odpowiednio zamienia
+podmacierze self.P między sobą, uwzględniając eps.move (np. po turnleft P[0] będzie na 5% P[0],
+a na 95% P[1])
+
 Sensor "nie rozjeżdża" się w czasie. Poniżej zdjęcie działania dla n=500
 ![alt text](https://github.com/wojdzi1607/Projekt_SI/blob/master/500n.png?raw=true)
 
-# uwzględnienie bump
+# Uwzględnienie bump
 Jeżeli wystąpiło bump tj. robot uderzył w ścianę naprzeciwko to:
 W obliczaniu macierzy T wartość czynnika przejść w aktualnej lokacji = 1. (tak samo jak przy obrocie).
 W obliczaniu macierzy O:
@@ -28,4 +32,4 @@ ma ściany wynosi 0
 PS. na początku wywołania funkcji ustawiana jest flaga 'bump', a w sensorze [bump] zmieniane jest
 na [fwd], lub [fwd] jest dopisywane, jeżeli sensor błędnie nie wykrył [fwd].
  
-# heurestyka
+# Heurestyka
