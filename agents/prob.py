@@ -42,7 +42,7 @@ class LocAgent:
     def __call__(self, percept):
         # update posterior
         # TODO PUT YOUR CODE HERE
-        # BUMP BUMP BUMP BUMP BUMP BUMP BUMP BUMP BUMP BUMP BUMP BUMP BUMP BUMP BUMP BUMP BUMP BUMP BUMP BUMP
+        # detect bump in percept
         if 'bump' in percept:
             bump = True
             if 'fwd' not in percept:
@@ -51,8 +51,8 @@ class LocAgent:
                 percept.pop(0)
         else:
             bump = False
-        # COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY
-        # ___________________________________________________________________________________________________
+
+        # swap self.P considering the error if there was a turnleft/turnright before
         P_turn = self.P
         if self.prev_action == 'turnleft':
             P_turn[0] = (0.05 * self.P[0]) + (0.95 * self.P[1])
@@ -65,8 +65,8 @@ class LocAgent:
             P_turn[2] = (0.05 * self.P[2]) + (0.95 * self.P[1])
             P_turn[3] = (0.05 * self.P[3]) + (0.95 * self.P[2])
         self.P = P_turn
-        # COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY
-        # ___________________________________________________________________________________________________
+
+        # T matrix calculation considering the bump
         T = np.zeros([len(self.locations), len(self.locations)], dtype=np.float)
         T = np.array([T, T, T, T])
         dirs = ['N', 'E', 'S', 'W']
@@ -83,11 +83,8 @@ class LocAgent:
             else:
                 for idx, loc in enumerate(self.locations):
                     T[i, idx, idx] = 1.0
-        # -------------------------------------------------------------------------------------------------------
-        O = np.zeros([len(self.locations)], dtype=np.float)
-        O = np.array([O, O, O, O])
-        # COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY
-        # ___________________________________________________________________________________________________
+
+        # translation percept ['fwd', 'bckwd', 'left', 'right'] to percept_tmp [N, E, S, W]
         percept_tmp = [list(percept), list(percept), list(percept), list(percept)]
         for k in range(4):
             if k == 0:
@@ -114,8 +111,10 @@ class LocAgent:
                     if percept_tmp[k][j] == 'bckwd': percept_tmp[k][j] = 'E'
                     if percept_tmp[k][j] == 'left': percept_tmp[k][j] = 'S'
                     if percept_tmp[k][j] == 'right': percept_tmp[k][j] = 'N'
-        # COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY COPY
-        # ___________________________________________________________________________________________________
+
+        # O matrix calculation considering the bump
+        O = np.zeros([len(self.locations)], dtype=np.float)
+        O = np.array([O, O, O, O])
         for i in range(4):
             for idx, loc in enumerate(self.locations):
                 prob = 1.0
@@ -123,33 +122,38 @@ class LocAgent:
                     nh_loc = nextLoc(loc, d)
                     obstacle = (not legalLoc(nh_loc, self.size)) or (nh_loc in self.walls)
                     if obstacle == (d in percept_tmp[i]):
-                        # jesli jest bump to sensor jest bezbledny dla kierunku fwd
+                        # if there is a bump, the sensor is error-free for the fwd direction
                         if bump and d == percept_tmp[i][0]:
                             prob = 1
                         else:
                             prob *= (1 - self.eps_perc)
                     else:
                         prob *= self.eps_perc
-                # jesli jest bump to ustawia prob=0 dla lokacji z orientacją w ktorych fwd sasiad nie jest scianą
+                # if there is bump, set prob = 0 for orientations where fwd-location is not a wall
                 if bump:
                     bump_wall = nextLoc(loc, percept_tmp[i][0])
                     if bump_wall not in self.walls:
                         prob = 0
                 O[i, idx] = prob
 
+        # P matrix calculation each submatrix separately
         for i in range(4):
             self.P[i] = T[i].transpose() @ self.P[i]
             self.P[i] = O[i] * self.P[i]
 
         self.P /= np.sum(self.P)
-        # _____________________________________________________________________________________________________
-        action = 'forward'
+
         # TODO CHANGE THIS HEURISTICS TO SPEED UP CONVERGENCE
         # if there is a wall ahead then lets turn
         if 'fwd' in percept:
             # higher chance of turning left to avoid getting stuck in one location
-            action = np.random.choice(['turnleft', 'turnright'], 1, p=[0.8, 0.2])
-            # action = np.random.choice(['forward', 'turnleft', 'turnright'], 1, p=[0.4, 0.3, 0.3])
+            action = np.random.choice(['turnleft', 'turnright'], 1, p=[0.7, 0.3])
+        elif 'left' not in percept and 'bckwd' not in percept and 'right' in percept:
+            # prefer turning left when choice to go fwd or left
+            action = np.random.choice(['forward', 'turnleft'], 1, p=[0.2, 0.8])
+        elif 'right' not in percept and 'bckwd' not in percept and 'left' in percept:
+            # prefer turning right when choice to go fwd or right
+            action = np.random.choice(['forward', 'turnright'], 1, p=[0.2, 0.8])
         else:
             # prefer moving forward to explore
             action = np.random.choice(['forward', 'turnleft', 'turnright'], 1, p=[0.8, 0.1, 0.1])
@@ -167,7 +171,6 @@ class LocAgent:
             for idx, loc in enumerate(self.locations):
                 P_arr[loc[0], loc[1], i] = self.P[i, idx]
         P_arr = P_arr / np.sum(P_arr)
-        # -----------------------
 
         return P_arr
 
