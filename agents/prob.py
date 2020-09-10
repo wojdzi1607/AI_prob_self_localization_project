@@ -146,24 +146,17 @@ class LocAgent:
         # TODO CHANGE THIS HEURISTICS TO SPEED UP CONVERGENCE
         # if there is a wall ahead then lets turn
         action = 'forward'
-
         if 'fwd' in percept:
-            if 'right' in percept and 'left' not in percept:
-                # higher chance of turning left
-                action = np.random.choice(['forward', 'turnleft'], 1, p=[0.1, 0.9])
-            elif 'left' in percept and 'right' not in percept:
-                # higher chance of turning right
-                action = np.random.choice(['forward', 'turnright'], 1, p=[0.1, 0.9])
-            else:
-                action = np.random.choice(['forward', 'turnleft', 'turnright'], 1, p=[0.1, 0.5, 0.4])
+            action = 'turnright'
+        if self.prev_action == 'turnleft' and 'left' not in percept:
+            action = 'forward'
         else:
-            if 'left' in percept and 'right' in percept:
+            if 'left' in percept and 'fwd' not in percept:
                 action = 'forward'
-            else:
-                if 'left' not in percept and 'right' in percept and self.prev_action == 'forward':
-                    action = np.random.choice(['forward', 'turnleft'], 1, p=[0.2, 0.8])
-                if 'right' not in percept and 'right' in percept and self.prev_action == 'forward':
-                    action = np.random.choice(['forward', 'turnright'], 1, p=[0.2, 0.8])
+            if 'left' not in percept:
+                action = 'turnleft'
+            if 'left' in percept and 'fwd' in percept:
+                action = 'turnright'
 
         self.prev_action = action
 
