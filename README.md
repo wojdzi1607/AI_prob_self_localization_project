@@ -36,9 +36,12 @@ na [fwd], lub [fwd] jest dopisywane, jeżeli sensor błędnie nie wykrył [fwd].
  
 # Heurestyka
 
-- kiedy sensor wykryje ścianę naprzeciwko, skręci w lewo lub prawo (70%:30%)
-- kiedy sensor nie wykryje ściany naprzeciwko i z lewej (wybór pomiędzy fwd a lewo),
-poruszy się fwd lub skręci w lewo (20%:80%)
-- kiedy sensor nie wykryje ściany naprzeciwko i z prawej (wybór pomiędzy fwd a prawo),
-poruszy się fwd lub skręci w prawo (20%:80%)
-- w przeciwnym wypadku preferuje poruszanie się naprzód (80%)
+Kiedy sensor wykryje ścianę naprzeciwko i:
+- wykryje ścianę po lewej, to skręci w prawo (90%) lub fwd (10%)
+- wykryje ścianę po prawej, to skręci w lewo (90%) lub fwd (10%)
+Kiedy sensor nie wykryje ściany naprzeciwko i:
+- wykryje ścianę po lewej i po prawej to poruszy się fwd (100%)
+- jeśli doszedł do rozdroża (poprzednia akcja była forward i nie wykrył ściany po lewej)
+to skręci w lewo (80%) lub fwd (20%)
+- jeśli doszedł do rozdroża (poprzednia akcja była forward i nie wykrył ściany po prawej)
+to skręci w prawo (80%) lub fwd (20%)

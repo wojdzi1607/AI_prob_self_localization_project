@@ -175,7 +175,7 @@ class LocView:
 
 
 def main():
-    random.seed(13)
+    random.seed(50)
     # rate of executing actions
     rate = 1
     # chance that perception will be wrong
@@ -230,7 +230,7 @@ def main():
         view.update(env, P)
         update(rate)
         # uncomment to pause before action
-        view.pause()
+        # view.pause()
 
         env.doAction(action)
 

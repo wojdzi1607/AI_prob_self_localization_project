@@ -145,18 +145,25 @@ class LocAgent:
 
         # TODO CHANGE THIS HEURISTICS TO SPEED UP CONVERGENCE
         # if there is a wall ahead then lets turn
+        action = 'forward'
+
         if 'fwd' in percept:
-            # higher chance of turning left to avoid getting stuck in one location
-            action = np.random.choice(['turnleft', 'turnright'], 1, p=[0.7, 0.3])
-        elif 'left' not in percept and 'bckwd' not in percept and 'right' in percept:
-            # prefer turning left when choice to go fwd or left
-            action = np.random.choice(['forward', 'turnleft'], 1, p=[0.2, 0.8])
-        elif 'right' not in percept and 'bckwd' not in percept and 'left' in percept:
-            # prefer turning right when choice to go fwd or right
-            action = np.random.choice(['forward', 'turnright'], 1, p=[0.2, 0.8])
+            if 'right' in percept and 'left' not in percept:
+                # higher chance of turning left
+                action = np.random.choice(['forward', 'turnleft'], 1, p=[0.1, 0.9])
+            elif 'left' in percept and 'right' not in percept:
+                # higher chance of turning right
+                action = np.random.choice(['forward', 'turnright'], 1, p=[0.1, 0.9])
+            else:
+                action = np.random.choice(['forward', 'turnleft', 'turnright'], 1, p=[0.1, 0.5, 0.4])
         else:
-            # prefer moving forward to explore
-            action = np.random.choice(['forward', 'turnleft', 'turnright'], 1, p=[0.8, 0.1, 0.1])
+            if 'left' in percept and 'right' in percept:
+                action = 'forward'
+            else:
+                if 'left' not in percept and 'right' in percept and self.prev_action == 'forward':
+                    action = np.random.choice(['forward', 'turnleft'], 1, p=[0.2, 0.8])
+                if 'right' not in percept and 'right' in percept and self.prev_action == 'forward':
+                    action = np.random.choice(['forward', 'turnright'], 1, p=[0.2, 0.8])
 
         self.prev_action = action
 
