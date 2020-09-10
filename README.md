@@ -39,6 +39,7 @@ na [fwd], lub [fwd] jest dopisywane, jeżeli sensor błędnie nie wykrył [fwd].
 Kiedy sensor wykryje ścianę naprzeciwko i:
 - wykryje ścianę po lewej, to skręci w prawo (90%) lub fwd (10%)
 - wykryje ścianę po prawej, to skręci w lewo (90%) lub fwd (10%)
+
 Kiedy sensor nie wykryje ściany naprzeciwko i:
 - wykryje ścianę po lewej i po prawej to poruszy się fwd (100%)
 - jeśli doszedł do rozdroża (poprzednia akcja była forward i nie wykrył ściany po lewej)
